@@ -1,0 +1,85 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:MessageBoxUtils">
+    <Style TargetType="{x:Type local:WPFMessageBoxControl}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:WPFMessageBoxControl}">
+                    <Grid FlowDirection="{Binding ContentFlowDirection}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="65" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Image Width="32"
+                               Height="32"
+                               Margin="15"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               Source="{Binding MessageImageSource}" />
+
+                        <TextBlock Grid.Row="0"
+                                   Grid.Column="1"
+                                   Margin="10,20,10,10"
+                                   HorizontalAlignment="{Binding ContentTextAlignment}"
+                                   VerticalAlignment="Top"
+                                   FontWeight="SemiBold"
+                                   Text="{Binding Message}"
+                                   TextAlignment="Left"
+                                   TextWrapping="Wrap" />
+
+                        <Border Grid.Row="1"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
+                                Margin="0,10,0,0"
+                                Background="#FFF0F0F0"
+                                BorderBrush="#FFDFDFDF"
+                                BorderThickness="0 1 0 0">
+                            <StackPanel Margin="20,10"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center"
+                                        Orientation="Horizontal">
+                                <Button x:Name="PART_YesButton"
+                                        Width="80"
+                                        Height="24"
+                                        Margin="5 5 5 5"
+                                        Command="{Binding YesCommand}"
+                                        Content="_Yes"
+                                        IsDefault="{Binding IsYesDefault}"
+                                        Visibility="{Binding YesNoVisibility}" />
+                                <Button x:Name="PART_NoButton"
+                                        Width="80"
+                                        Height="24"
+                                        Margin="5 5 5 5"
+                                        Command="{Binding NoCommand}"
+                                        Content="_No"
+                                        IsDefault="{Binding IsNoDefault}"
+                                        Visibility="{Binding YesNoVisibility}" />
+                                <Button x:Name="PART_OkButton"
+                                        Width="80"
+                                        Height="24"
+                                        Margin="5 5 5 5"
+                                        Command="{Binding OkCommand}"
+                                        Content="O_K"
+                                        IsDefault="{Binding IsOkDefault}"
+                                        Visibility="{Binding OkVisibility}" />
+                                <Button x:Name="PART_CancelButton"
+                                        Width="80"
+                                        Height="24"
+                                        Margin="5 5 5 5"
+                                        Command="{Binding CancelCommand}"
+                                        Content="_Cancel"
+                                        IsDefault="{Binding IsCancelDefault}"
+                                        Visibility="{Binding CancelVisibility}" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>
