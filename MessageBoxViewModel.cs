@@ -6,8 +6,9 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Drawing;
+using System.Timers;
+using System.Windows.Threading;
 
 namespace MessageBoxUtils
 {
@@ -26,7 +27,7 @@ namespace MessageBoxUtils
         private string _message;
         private MessageBoxButton _buttonOption;
         private MessageBoxOptions _options;
-        
+
         private Visibility _yesNoVisibility;
         private Visibility _cancelVisibility;
         private Visibility _okVisibility;
@@ -42,8 +43,11 @@ namespace MessageBoxUtils
         private ICommand _escapeCommand;
         private ICommand _closeCommand;
 
-        private WPFMessageBoxWindow _view;
+        private readonly WPFMessageBoxWindow _view;
         private ImageSource _messageImageSource;
+        private int _timeout;
+        private readonly Timer _timer;
+        private Visibility _timeoutVisibility = Visibility.Collapsed;
 
         public MessageBoxViewModel(
             WPFMessageBoxWindow view,
@@ -52,7 +56,8 @@ namespace MessageBoxUtils
             MessageBoxButton buttonOption,
             MessageBoxImage image,
             MessageBoxResult defaultResult,
-            MessageBoxOptions options)
+            MessageBoxOptions options,
+            int timeout)
         {
             //TextAlignment
             Title = title;
@@ -64,7 +69,28 @@ namespace MessageBoxUtils
             SetButtonVisibility(buttonOption);
             SetImageSource(image);
             SetButtonDefault(defaultResult);
+            Timeout = timeout;
+
             _view = view;
+
+            if (timeout <= 0) return;
+
+            TimeoutVisibility = Visibility.Visible;
+
+            _timer = new Timer(1000) { AutoReset = true };
+            _timer.Elapsed += (sender, args) =>
+            {
+                Timeout -= 1;
+                if (Timeout > 0) return;
+
+                _timer.Stop();
+                Application.Current.Dispatcher.Invoke(new Action(() =>
+                {
+                    Result = defaultResult;
+                    _view.Close();
+                }));
+            };
+            _timer.Start();
         }
 
         public MessageBoxButton ButtonOption
@@ -82,7 +108,7 @@ namespace MessageBoxUtils
 
         public MessageBoxOptions Options
         {
-            get { return _options; } 
+            get { return _options; }
             set
             {
                 if (_options != value)
@@ -90,6 +116,16 @@ namespace MessageBoxUtils
                     _options = value;
                     NotifyPropertyChange("Options");
                 }
+            }
+        }
+
+        public int Timeout
+        {
+            get { return _timeout; }
+            set
+            {
+                _timeout = value;
+                NotifyPropertyChange("Timeout");
             }
         }
 
@@ -126,6 +162,16 @@ namespace MessageBoxUtils
             {
                 _messageImageSource = value;
                 NotifyPropertyChange("MessageImageSource");
+            }
+        }
+
+        public Visibility TimeoutVisibility
+        {
+            get { return _timeoutVisibility; }
+            set
+            {
+                _timeoutVisibility = value;
+                NotifyPropertyChange("TimeoutVisibility");
             }
         }
 
@@ -210,7 +256,7 @@ namespace MessageBoxUtils
         public bool IsOkDefault
         {
             get { return _isOkDefault; }
-            set 
+            set
             {
                 if (_isOkDefault != value)
                 {
@@ -232,7 +278,7 @@ namespace MessageBoxUtils
                 }
             }
         }
-        
+
         public bool IsNoDefault
         {
             get { return _isNoDefault; }
@@ -245,7 +291,7 @@ namespace MessageBoxUtils
                 }
             }
         }
-        
+
         public bool IsCancelDefault
         {
             get { return _isCancelDefault; }
@@ -264,13 +310,13 @@ namespace MessageBoxUtils
         {
             get
             {
-                if (_yesCommand == null)
-                    _yesCommand = new DelegateCommand(() => 
-                        {
-                            Result = MessageBoxResult.Yes;
-                            _view.Close();
-                        });
-                return _yesCommand;
+                return _yesCommand ?? (_yesCommand = new DelegateCommand(() =>
+                {
+                    if (_timer != null)
+                        _timer.Stop();
+                    Result = MessageBoxResult.Yes;
+                    _view.Close();
+                }));
             }
         }
 
@@ -279,13 +325,13 @@ namespace MessageBoxUtils
         {
             get
             {
-                if (_noCommand == null)
-                    _noCommand = new DelegateCommand(() => 
-                        {
-                            Result = MessageBoxResult.No;
-                            _view.Close();
-                        });
-                return _noCommand;
+                return _noCommand ?? (_noCommand = new DelegateCommand(() =>
+                {
+                    if (_timer != null)
+                        _timer.Stop();
+                    Result = MessageBoxResult.No;
+                    _view.Close();
+                }));
             }
         }
 
@@ -294,13 +340,13 @@ namespace MessageBoxUtils
         {
             get
             {
-                if (_cancelCommand == null)
-                    _cancelCommand = new DelegateCommand(() =>
-                        {
-                            Result = MessageBoxResult.Cancel;
-                            _view.Close();
-                        });
-                return _cancelCommand;
+                return _cancelCommand ?? (_cancelCommand = new DelegateCommand(() =>
+                {
+                    if (_timer != null)
+                        _timer.Stop();
+                    Result = MessageBoxResult.Cancel;
+                    _view.Close();
+                }));
             }
         }
 
@@ -309,13 +355,13 @@ namespace MessageBoxUtils
         {
             get
             {
-                if (_okCommand == null)
-                    _okCommand = new DelegateCommand(() => 
-                        {
-                            Result = MessageBoxResult.OK;
-                            _view.Close();
-                        });
-                return _okCommand;
+                return _okCommand ?? (_okCommand = new DelegateCommand(() =>
+                {
+                    if (_timer != null)
+                        _timer.Stop();
+                    Result = MessageBoxResult.OK;
+                    _view.Close();
+                }));
             }
         }
 
@@ -324,31 +370,28 @@ namespace MessageBoxUtils
         {
             get
             {
-                if (_escapeCommand == null)
-                    _escapeCommand = new DelegateCommand(() =>
+                return _escapeCommand ?? (_escapeCommand = new DelegateCommand(() =>
+                {
+                    if (_timer != null)
+                        _timer.Stop();
+                    switch (ButtonOption)
                     {
-                        switch (ButtonOption)
-                        {
-                            case MessageBoxButton.OK:
-                                Result = MessageBoxResult.OK;
-                                _view.Close();
-                                break;
+                        case MessageBoxButton.OK:
+                            Result = MessageBoxResult.OK;
+                            _view.Close();
+                            break;
 
-                            case MessageBoxButton.YesNoCancel:
-                            case MessageBoxButton.OKCancel:
-                                Result = MessageBoxResult.Cancel;
-                                _view.Close();
-                                break;
+                        case MessageBoxButton.YesNoCancel:
+                        case MessageBoxButton.OKCancel:
+                            Result = MessageBoxResult.Cancel;
+                            _view.Close();
+                            break;
 
-                            case MessageBoxButton.YesNo:
-                                // ignore close
-                                break;
-
-                            default:
-                                break;
-                        }
-                    });
-                return _escapeCommand;
+                        case MessageBoxButton.YesNo:
+                            // ignore close
+                            break;
+                    }
+                }));
             }
         }
 
@@ -357,39 +400,35 @@ namespace MessageBoxUtils
         {
             get
             {
-                if (_closeCommand == null)
-                    _closeCommand = new DelegateCommand(() =>
+                return _closeCommand ?? (_closeCommand = new DelegateCommand(() =>
+                {
+                    if (Result != MessageBoxResult.None) return;
+
+                    if (_timer != null)
+                        _timer.Stop();
+                    switch (ButtonOption)
                     {
-                        if (Result == MessageBoxResult.None)
-                        {
-                            switch (ButtonOption)
-                            {
-                                case MessageBoxButton.OK:
-                                    Result = MessageBoxResult.OK;
-                                    break;
+                        case MessageBoxButton.OK:
+                            Result = MessageBoxResult.OK;
+                            break;
 
-                                case MessageBoxButton.YesNoCancel:
-                                case MessageBoxButton.OKCancel:
-                                    Result = MessageBoxResult.Cancel;
-                                    break;
+                        case MessageBoxButton.YesNoCancel:
+                        case MessageBoxButton.OKCancel:
+                            Result = MessageBoxResult.Cancel;
+                            break;
 
-                                case MessageBoxButton.YesNo:
-                                    // ignore close
-                                    break;
-
-                                default:
-                                    break;
-                            }
-                        }
-                    });
-                return _closeCommand;
+                        case MessageBoxButton.YesNo:
+                            // ignore close
+                            break;
+                    }
+                }));
             }
         }
 
         private void SetDirections(MessageBoxOptions options)
         {
             switch (options)
-            { 
+            {
                 case MessageBoxOptions.None:
                     ContentTextAlignment = HorizontalAlignment.Left;
                     ContentFlowDirection = FlowDirection.LeftToRight;
@@ -428,7 +467,7 @@ namespace MessageBoxUtils
         private void SetButtonDefault(MessageBoxResult defaultResult)
         {
             switch (defaultResult)
-            { 
+            {
                 case MessageBoxResult.OK:
                     IsOkDefault = true;
                     break;
@@ -443,9 +482,6 @@ namespace MessageBoxUtils
 
                 case MessageBoxResult.Cancel:
                     IsCancelDefault = true;
-                    break;
-
-                default:
                     break;
             }
         }

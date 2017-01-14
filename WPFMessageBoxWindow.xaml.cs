@@ -1,48 +1,40 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using System.Media;
+using System.Windows;
+using System.Windows.Input;
 
 namespace MessageBoxUtils
 {
     /// <summary>
-    /// Interaction logic for WPFMessageBoxWindow.xaml
+    ///     Interaction logic for WPFMessageBoxWindow.xaml
     /// </summary>
     public partial class WPFMessageBoxWindow
     {
+        [ThreadStatic] private static WPFMessageBoxWindow _messageBoxWindow;
+
+        private MessageBoxViewModel _viewModel;
+
         public WPFMessageBoxWindow()
         {
             InitializeComponent();
         }
 
-        private MessageBoxViewModel _viewModel;
-
         public static MessageBoxResult Show(
             Action<Window> setOwner,
-            string messageBoxText, 
-            string caption, 
-            MessageBoxButton button, 
-            MessageBoxImage icon, 
-            MessageBoxResult defaultResult, 
-            MessageBoxOptions options)
+            string messageBoxText,
+            string caption,
+            MessageBoxButton button,
+            MessageBoxImage icon,
+            MessageBoxResult defaultResult,
+            MessageBoxOptions options,
+            int timeout)
         {
             if ((options & MessageBoxOptions.DefaultDesktopOnly) == MessageBoxOptions.DefaultDesktopOnly)
             {
-                
             }
 
             if ((options & MessageBoxOptions.ServiceNotification) == MessageBoxOptions.ServiceNotification)
             {
-                
             }
 
             _messageBoxWindow = new WPFMessageBoxWindow();
@@ -51,7 +43,8 @@ namespace MessageBoxUtils
 
             PlayMessageBeep(icon);
 
-            _messageBoxWindow._viewModel = new MessageBoxViewModel(_messageBoxWindow, caption, messageBoxText, button, icon, defaultResult, options);
+            _messageBoxWindow._viewModel = new MessageBoxViewModel(_messageBoxWindow, caption, messageBoxText, button,
+                icon, defaultResult, options, timeout);
             _messageBoxWindow.DataContext = _messageBoxWindow._viewModel;
             _messageBoxWindow.ShowDialog();
             return _messageBoxWindow._viewModel.Result;
@@ -87,9 +80,6 @@ namespace MessageBoxUtils
             }
         }
 
-        [ThreadStatic]
-        private static WPFMessageBoxWindow _messageBoxWindow;
-
         protected override void OnSourceInitialized(EventArgs e)
         {
             // removes the application icon from the window top left corner
@@ -97,7 +87,7 @@ namespace MessageBoxUtils
             WindowHelper.RemoveIcon(this);
 
             switch (_viewModel.Options)
-            { 
+            {
                 case MessageBoxOptions.None:
                     break;
 
@@ -116,9 +106,7 @@ namespace MessageBoxUtils
             var systemMenuHelper = new SystemMenuHelper(this);
 
             if (_viewModel.ButtonOption == MessageBoxButton.YesNo)
-            {
                 systemMenuHelper.DisableCloseButton = true;
-            }
 
             systemMenuHelper.RemoveResizeMenu = true;
         }
@@ -126,9 +114,7 @@ namespace MessageBoxUtils
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
-            {
                 _viewModel.EscapeCommand.Execute(null);
-            }
         }
 
         protected override void OnClosed(EventArgs e)

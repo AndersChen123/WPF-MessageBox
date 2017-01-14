@@ -83,9 +83,9 @@ namespace MessageBoxUtils
         // Returns:
         //     A System.Windows.MessageBoxResult value that specifies which message box
         //     button is clicked by the user.
-        public static MessageBoxResult Show(string messageBoxText, string caption, MessageBoxButton button)
+        public static MessageBoxResult Show(string messageBoxText, string caption, MessageBoxButton button, int timeout = 0)
         {
-            return ShowCore(null, messageBoxText, caption, button);
+            return ShowCore(null, messageBoxText, caption, button, timeout:timeout);
         }
 
         //
@@ -106,9 +106,9 @@ namespace MessageBoxUtils
         // Returns:
         //     A System.Windows.MessageBoxResult value that specifies which message box
         //     button is clicked by the user.
-        public static MessageBoxResult Show(Window owner, string messageBoxText, string caption)
+        public static MessageBoxResult Show(Window owner, string messageBoxText, string caption, int timeout = 0)
         {
-            return ShowCore(owner, messageBoxText, caption);
+            return ShowCore(owner, messageBoxText, caption, timeout:timeout);
         }
 
         //
@@ -133,9 +133,9 @@ namespace MessageBoxUtils
         // Returns:
         //     A System.Windows.MessageBoxResult value that specifies which message box
         //     button is clicked by the user.
-        public static MessageBoxResult Show(string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon)
+        public static MessageBoxResult Show(string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon, int timeout = 0)
         {
-            return ShowCore(null, messageBoxText, caption, button, icon);
+            return ShowCore(null, messageBoxText, caption, button, icon, timeout: timeout);
         }
 
         //
@@ -161,9 +161,9 @@ namespace MessageBoxUtils
         // Returns:
         //     A System.Windows.MessageBoxResult value that specifies which message box
         //     button is clicked by the user.
-        public static MessageBoxResult Show(Window owner, string messageBoxText, string caption, MessageBoxButton button)
+        public static MessageBoxResult Show(Window owner, string messageBoxText, string caption, MessageBoxButton button, int timeout = 0)
         {
-            return ShowCore(owner, messageBoxText, caption, button);
+            return ShowCore(owner, messageBoxText, caption, button, timeout: timeout);
         }
 
         //
@@ -192,9 +192,9 @@ namespace MessageBoxUtils
         // Returns:
         //     A System.Windows.MessageBoxResult value that specifies which message box
         //     button is clicked by the user.
-        public static MessageBoxResult Show(string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon, MessageBoxResult defaultResult)
+        public static MessageBoxResult Show(string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon, MessageBoxResult defaultResult, int timeout = 0)
         {
-            return ShowCore(null, messageBoxText, caption, button, icon, defaultResult);
+            return ShowCore(null, messageBoxText, caption, button, icon, defaultResult, timeout:timeout);
         }
 
         //
@@ -219,13 +219,16 @@ namespace MessageBoxUtils
         //
         //   icon:
         //     A System.Windows.MessageBoxImage value that specifies the icon to display.
+        //  
+        //   timeout:
+        //     seconds
         //
         // Returns:
         //     A System.Windows.MessageBoxResult value that specifies which message box
         //     button is clicked by the user.
-        public static MessageBoxResult Show(Window owner, string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon)
+        public static MessageBoxResult Show(Window owner, string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon, int timeout = 0)
         {
-            return ShowCore(owner, messageBoxText, caption, button, icon);
+            return ShowCore(owner, messageBoxText, caption, button, icon, timeout: timeout);
         }
 
         //
@@ -258,9 +261,9 @@ namespace MessageBoxUtils
         // Returns:
         //     A System.Windows.MessageBoxResult value that specifies which message box
         //     button is clicked by the user.
-        public static MessageBoxResult Show(string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon, MessageBoxResult defaultResult, MessageBoxOptions options)
+        public static MessageBoxResult Show(string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon, MessageBoxResult defaultResult, MessageBoxOptions options, int timeout)
         {
-            return ShowCore(null, messageBoxText, caption, button, icon, defaultResult, options);
+            return ShowCore(null, messageBoxText, caption, button, icon, defaultResult, options, timeout);
         }
 
         //
@@ -293,9 +296,9 @@ namespace MessageBoxUtils
         // Returns:
         //     A System.Windows.MessageBoxResult value that specifies which message box
         //     button is clicked by the user.
-        public static MessageBoxResult Show(Window owner, string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon, MessageBoxResult defaultResult)
+        public static MessageBoxResult Show(Window owner, string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon, MessageBoxResult defaultResult, int timeout = 0)
         {
-            return ShowCore(owner, messageBoxText, caption, button, icon, defaultResult);
+            return ShowCore(owner, messageBoxText, caption, button, icon, defaultResult, timeout: timeout);
         }
 
         //
@@ -331,9 +334,9 @@ namespace MessageBoxUtils
         // Returns:
         //     A System.Windows.MessageBoxResult value that specifies which message box
         //     button is clicked by the user.
-        public static MessageBoxResult Show(Window owner, string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon, MessageBoxResult defaultResult, MessageBoxOptions options)
+        public static MessageBoxResult Show(Window owner, string messageBoxText, string caption, MessageBoxButton button, MessageBoxImage icon, MessageBoxResult defaultResult, MessageBoxOptions options, int timeout = 0)
         {
-            return ShowCore(owner, messageBoxText, caption, button, icon, defaultResult, options);
+            return ShowCore(owner, messageBoxText, caption, button, icon, defaultResult, options, timeout);
         }
 
         private static MessageBoxResult ShowCore(
@@ -343,14 +346,15 @@ namespace MessageBoxUtils
             MessageBoxButton button = MessageBoxButton.OK,
             MessageBoxImage icon = MessageBoxImage.None,
             MessageBoxResult defaultResult = MessageBoxResult.None,
-            MessageBoxOptions options = MessageBoxOptions.None)
+            MessageBoxOptions options = MessageBoxOptions.None,
+            int timeout = 0)
         {
             return WPFMessageBoxWindow.Show(
                 delegate(Window messageBoxWindow)
                 {
                     messageBoxWindow.Owner = owner;
                 },
-                messageBoxText, caption, button, icon, defaultResult, options);
+                messageBoxText, caption, button, icon, defaultResult, options, timeout);
         }
     }
 }
