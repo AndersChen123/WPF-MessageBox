@@ -53,6 +53,7 @@
                                     VerticalAlignment="Center"
                                     FontWeight="Bold"
                                     Foreground="Red"
+                                    Visibility="{Binding TimeoutVisibility}"
                                     Text="{Binding Timeout, StringFormat={}Exit after {0} seconds}"
                                     TextAlignment="Left"/>
 
